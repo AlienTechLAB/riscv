@@ -4,8 +4,8 @@
 // Table 20.1: "Assembler mnemonics for RISC-V integer and floating-point registers.", page 109.
 //-----------------------------------------------------------------------------------------------------
 
-#ifndef REGS32I_H
-#define REGS32I_H
+#ifndef REGFILE32I_H
+#define REGFILE32I_H
 
 #include <stdint.h>
 
@@ -50,4 +50,4 @@ struct RegFile32I
           uint32_t pc{0};                                            // Program Counter
 };
 
-#endif // REGS32I_H
+#endif // REGFILE32I_H

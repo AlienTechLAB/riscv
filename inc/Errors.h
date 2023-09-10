@@ -1,10 +1,9 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-enum class err_t {
+enum class res_t {
 	OK,
-	ERROR,
-	OUT_OF_MEM
+	ERROR
 };
 
 #endif	// ERROR_H
