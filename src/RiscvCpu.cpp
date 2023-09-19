@@ -87,19 +87,21 @@ res_t RiscvCpu::on32bitInstr(const uint8_t opcode, const uint32_t instr32)
 	res_t res = res_t::OK;
 	switch (opcode) {
 		case 0b00110111:
-			return lui(instr32);
+			return LUI(instr32);
 		case 0b00010111:
-			return auipc(instr32);
+			return AUIPC(instr32);
 		case 0b01101111:
-			return jal(instr32);
+			return JAL(instr32);
 		case 0b01100111:
-			return jalr(instr32);
+			return JALR(instr32);
 		case 0b01100011:
 			return opcode_01100011(instr32);
 		case 0b00000011:
 			return opcode_00000011(instr32);
 		case 0b00010011:
 			return opcode_00010011(instr32);
+		case 0b00110011:
+			return opcode_00110011(instr32);
 
 	};
 	return res_t::ERROR;
@@ -125,17 +127,17 @@ res_t RiscvCpu::opcode_01100011(const uint32_t instr32)
 {
 	switch (getFunct3(instr32)) {
 		case 0b000:
-			return beq(instr32);
+			return BEQ(instr32);
 		case 0b001:
-			return bne(instr32);
+			return BNE(instr32);
 		case 0b100:
-			return blt(instr32);
+			return BLT(instr32);
 		case 0b101:
-			return bge(instr32);
+			return BGE(instr32);
 		case 0b110:
-			return bltu(instr32);
+			return BLTU(instr32);
 		case 0b111:
-			return bgeu(instr32);
+			return BGEU(instr32);
 	}
 	return res_t::ERROR;
 }
@@ -144,15 +146,15 @@ res_t RiscvCpu::opcode_00000011(const uint32_t instr32)
 {
 	switch (getFunct3(instr32)) {
 		case 0b000:
-			return lb(instr32);
+			return LB(instr32);
 		case 0b001:
-			return lh(instr32);
+			return LH(instr32);
 		case 0b010:
-			return lw(instr32);
+			return LW(instr32);
 		case 0b100:
-			return lbu(instr32);
+			return LBU(instr32);
 		case 0b101:
-			return lhu(instr32);
+			return LHU(instr32);
 	}
 	return res_t::ERROR;
 }
@@ -161,21 +163,21 @@ res_t RiscvCpu::opcode_00010011(const uint32_t instr32)
 {
 	switch (getFunct3(instr32)) {
 		case 0b000:
-			return addi(instr32);
+			return ADDI(instr32);
 		case 0b001:
 			return opcode_00010011_001(instr32);
 		case 0b010:
-			return slti(instr32);
+			return SLTI(instr32);
 		case 0b011:
-			return sltiu(instr32);
+			return SLTIU(instr32);
 		case 0b100:
-			return xori(instr32);
+			return XORI(instr32);
 		case 0b101:
 			return opcode_00010011_101(instr32);
 		case 0b110:
-			return ori(instr32);
+			return ORI(instr32);
 		case 0b111:
-			return andi(instr32);
+			return ANDI(instr32);
 	}
 	return res_t::ERROR;
 }
@@ -183,7 +185,7 @@ res_t RiscvCpu::opcode_00010011(const uint32_t instr32)
 res_t RiscvCpu::opcode_00010011_001(const uint32_t instr32)
 {
 	if (getFunct7(instr32) == 0b0000000)
-		return slli(instr32);
+		return SLLI(instr32);
 	return res_t::ERROR;
 }
 
@@ -191,14 +193,72 @@ res_t RiscvCpu::opcode_00010011_101(const uint32_t instr32)
 {
 	switch (getFunct7(instr32)) {
 		case 0b0000000:
-			return srli(instr32);
+			return SRLI(instr32);
 		case 0b0100000:
-			return srai(instr32);
+			return SRAI(instr32);
 	}
 	return res_t::ERROR;
 }
 
-res_t RiscvCpu::lui(const uint32_t instr32)
+res_t RiscvCpu::opcode_00110011(const uint32_t instr32)
+{
+	switch (getFunct3(instr32)) {
+		case 0b000:
+			return opcode_00110011_000(instr32);
+		case 0b001:
+			return SLL(instr32);
+		case 0b010:
+			return SLT(instr32);
+		case 0b011:
+			return SLTU(instr32);
+		case 0b100:
+			return XOR(instr32);
+		case 0b101:
+			return opcode_00110011_101(instr32);
+		case 0b110:
+			return OR(instr32);
+		case 0b111:
+			return AND(instr32);
+	}
+	return res_t::ERROR;
+}
+
+res_t RiscvCpu::opcode_00110011_000(const uint32_t instr32)
+{
+	switch (getFunct7(instr32)) {
+		case 0b0000000:
+			return ADD(instr32);
+		case 0b0100000:
+			return SUB(instr32);
+	}
+	return res_t::ERROR;
+}
+
+res_t RiscvCpu::opcode_00110011_101(const uint32_t instr32)
+{
+	switch (getFunct7(instr32)) {
+		case 0b0000000:
+			return SRL(instr32);
+		case 0b0100000:
+			return SRA(instr32);
+	}
+	return res_t::ERROR;
+}
+
+res_t RiscvCpu::opcode_00100011(uint32_t instr32)
+{
+	switch (getFunct3(instr32)) {
+		case 0b000:
+			return SB(instr32);
+		case 0b001:
+			return SH(instr32);
+		case 0b010:
+			return SW(instr32);
+	}
+	return res_t::ERROR;
+}
+
+res_t RiscvCpu::LUI(const uint32_t instr32)
 {
 	// lui rd,imm
 	const uint8_t rd = getRd(instr32);
@@ -208,7 +268,7 @@ res_t RiscvCpu::lui(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::auipc(const uint32_t instr32)
+res_t RiscvCpu::AUIPC(const uint32_t instr32)
 {
 	// auipc rd,imm
 	const uint8_t rd = getRd(instr32);
@@ -218,7 +278,7 @@ res_t RiscvCpu::auipc(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::jal(const uint32_t instr32)
+res_t RiscvCpu::JAL(const uint32_t instr32)
 {
 	// jal rd,offset
 	const int32_t off = getJimm(instr32);
@@ -229,7 +289,7 @@ res_t RiscvCpu::jal(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::jalr(const uint32_t instr32)
+res_t RiscvCpu::JALR(const uint32_t instr32)
 {
 	// jalr rd,rs1,offset
 	if (getFunct3(instr32) != 0b000)
@@ -248,7 +308,7 @@ res_t RiscvCpu::jalr(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::beq(const uint32_t instr32)
+res_t RiscvCpu::BEQ(const uint32_t instr32)
 {
 	// beq rs1,rs2,offset
 	const int32_t off = getBimm(instr32);
@@ -258,7 +318,7 @@ res_t RiscvCpu::beq(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::bne(const uint32_t instr32)
+res_t RiscvCpu::BNE(const uint32_t instr32)
 {
 	// bne rs1,rs2,offset
 	const int32_t off = getBimm(instr32);
@@ -268,7 +328,7 @@ res_t RiscvCpu::bne(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::blt(const uint32_t instr32)
+res_t RiscvCpu::BLT(const uint32_t instr32)
 {
 	// blt rs1,rs2,offset
 	const int32_t off = getBimm(instr32);
@@ -278,7 +338,7 @@ res_t RiscvCpu::blt(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::bge(const uint32_t instr32)
+res_t RiscvCpu::BGE(const uint32_t instr32)
 {
 	// bge rs1,rs2,offset
 	const int32_t off = getBimm(instr32);
@@ -288,7 +348,7 @@ res_t RiscvCpu::bge(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::bltu(const uint32_t instr32)
+res_t RiscvCpu::BLTU(const uint32_t instr32)
 {
 	// bltu rs1,rs2,offset
 	const int32_t off = getBimm(instr32);
@@ -298,7 +358,7 @@ res_t RiscvCpu::bltu(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::bgeu(const uint32_t instr32)
+res_t RiscvCpu::BGEU(const uint32_t instr32)
 {
 	// bgeu rs1,rs2,offset
 	const int32_t off = getBimm(instr32);
@@ -308,7 +368,7 @@ res_t RiscvCpu::bgeu(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::lb(const uint32_t instr32)
+res_t RiscvCpu::LB(const uint32_t instr32)
 {
 	// lb rd,offset(rs1)
 	const uint8_t rd = getRd(instr32);
@@ -324,7 +384,7 @@ res_t RiscvCpu::lb(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::lh(const uint32_t instr32)
+res_t RiscvCpu::LH(const uint32_t instr32)
 {
 	// lh rd,offset(rs1)
 	const uint8_t rd = getRd(instr32);
@@ -340,9 +400,9 @@ res_t RiscvCpu::lh(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::lw(const uint32_t instr32)
+res_t RiscvCpu::LW(const uint32_t instr32)
 {
-	// lw rd,offset(rs1)
+	// LW rd,offset(rs1)
 	const uint8_t rd = getRd(instr32);
 	if (rd == 0)
 		return res_t::OK;
@@ -355,7 +415,7 @@ res_t RiscvCpu::lw(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::lbu(const uint32_t instr32)
+res_t RiscvCpu::LBU(const uint32_t instr32)
 {
 	// lbu rd,offset(rs1)
 	const uint8_t rd = getRd(instr32);
@@ -370,7 +430,7 @@ res_t RiscvCpu::lbu(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::lhu(const uint32_t instr32)
+res_t RiscvCpu::LHU(const uint32_t instr32)
 {
 	// lhu rd,offset(rs1)
 	const uint8_t rd = getRd(instr32);
@@ -385,7 +445,42 @@ res_t RiscvCpu::lhu(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::addi(uint32_t instr32)
+res_t RiscvCpu::SB(const uint32_t instr32)
+{
+	// sb rs2,offset(rs1)
+	const int32_t off = getSimm(instr32);
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	uint8_t byte = static_cast<uint8_t>(iRegFile.x[rs2] & 0xFF);
+	if (iMemory.writeUint8(byte, iRegFile.x[rs1] + off) == res_t::ERROR)
+		return res_t::ERROR;
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SH(const uint32_t instr32)
+{
+	// sh rs2,offset(rs1)
+	const int32_t off = getSimm(instr32);
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	uint16_t hword = static_cast<uint16_t>(iRegFile.x[rs2] & 0xFFFF);
+	if (iMemory.writeUint16(hword, iRegFile.x[rs1] + off) == res_t::ERROR)
+		return res_t::ERROR;
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SW(const uint32_t instr32)
+{
+	// sw rs2,offset(rs1)
+	const int32_t off = getSimm(instr32);
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	if (iMemory.writeUint32(iRegFile.x[rs2], iRegFile.x[rs1] + off) == res_t::ERROR)
+		return res_t::ERROR;
+	return res_t::OK;
+}
+
+res_t RiscvCpu::ADDI(uint32_t instr32)
 {
 	// addi rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -397,7 +492,7 @@ res_t RiscvCpu::addi(uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::slti(uint32_t instr32)
+res_t RiscvCpu::SLTI(uint32_t instr32)
 {
 	// slti rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -409,7 +504,7 @@ res_t RiscvCpu::slti(uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::sltiu(uint32_t instr32)
+res_t RiscvCpu::SLTIU(uint32_t instr32)
 {
 	// sltiu rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -421,7 +516,7 @@ res_t RiscvCpu::sltiu(uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::xori(uint32_t instr32)
+res_t RiscvCpu::XORI(uint32_t instr32)
 {
 	// xori rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -433,7 +528,7 @@ res_t RiscvCpu::xori(uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::ori(uint32_t instr32)
+res_t RiscvCpu::ORI(uint32_t instr32)
 {
 	// ori rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -445,7 +540,7 @@ res_t RiscvCpu::ori(uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::andi(uint32_t instr32)
+res_t RiscvCpu::ANDI(uint32_t instr32)
 {
 	// andi rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -457,7 +552,7 @@ res_t RiscvCpu::andi(uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::slli(const uint32_t instr32)
+res_t RiscvCpu::SLLI(const uint32_t instr32)
 {
 	// slli rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -469,7 +564,7 @@ res_t RiscvCpu::slli(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::srli(const uint32_t instr32)
+res_t RiscvCpu::SRLI(const uint32_t instr32)
 {
 	// srli rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -481,7 +576,7 @@ res_t RiscvCpu::srli(const uint32_t instr32)
 	return res_t::OK;
 }
 
-res_t RiscvCpu::srai(const uint32_t instr32)
+res_t RiscvCpu::SRAI(const uint32_t instr32)
 {
 	// srai rd,rs1,imm
 	const uint8_t rd = getRd(instr32);
@@ -490,5 +585,125 @@ res_t RiscvCpu::srai(const uint32_t instr32)
 	const uint32_t shamt = getShamt(instr32);
 	const uint8_t rs1 = getRs1(instr32);
 	iRegFile.x[rd] = static_cast<uint32_t>(static_cast<int32_t>(iRegFile.x[rs1]) >> shamt);
+	return res_t::OK;
+}
+
+res_t RiscvCpu::ADD(const uint32_t instr32)
+{
+	// add rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs1] + iRegFile.x[rs2];
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SUB(const uint32_t instr32)
+{
+	// sub rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs2] - iRegFile.x[rs1];
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SLL(const uint32_t instr32)
+{
+	// sll rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs1] << (iRegFile.x[rs2] & 0b11111);
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SLT(const uint32_t instr32)
+{
+	// slt rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = static_cast<int32_t>(iRegFile.x[rs1]) < static_cast<int32_t>(iRegFile.x[rs2]) ? 1 : 0;
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SLTU(const uint32_t instr32)
+{
+	// sltu rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs1] < iRegFile.x[rs2] ? 1 : 0;
+	return res_t::OK;
+}
+
+res_t RiscvCpu::XOR(const uint32_t instr32)
+{
+	// xor rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs1] ^ iRegFile.x[rs2];
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SRL(const uint32_t instr32)
+{
+	// srl rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs1] >> (iRegFile.x[rs2] & 0b11111);
+	return res_t::OK;
+}
+
+res_t RiscvCpu::SRA(const uint32_t instr32)
+{
+	// sra rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = static_cast<uint32_t>(static_cast<int32_t>(iRegFile.x[rs1]) >> (iRegFile.x[rs2] & 0b11111));
+	return res_t::OK;
+}
+
+res_t RiscvCpu::OR(const uint32_t instr32)
+{
+	// or rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs1] | iRegFile.x[rs2];
+	return res_t::OK;
+}
+
+res_t RiscvCpu::AND(const uint32_t instr32)
+{
+	// and rd,rs1,rs2
+	const uint8_t rd = getRd(instr32);
+	if (rd == 0)
+		return res_t::OK;
+	const uint8_t rs1 = getRs1(instr32);
+	const uint8_t rs2 = getRs2(instr32);
+	iRegFile.x[rd] = iRegFile.x[rs1] & iRegFile.x[rs2];
 	return res_t::OK;
 }
