@@ -1,0 +1,1 @@
+g++ -Wpedantic -std=c++14 -O0 -g src/Main.cpp src/Memory.cpp src/RiscvCpu.cpp -Iinc -o bin/riscv
