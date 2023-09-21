@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Memory init failed.\n");
 		return 1;
 	}
-	memory.load(argv[1]);
+	memory.load(argv[1], 0x10000);
 	RiscvCpu cpu(memory);
 	while (true) {
 		const res_t resInstr = cpu.nextInstr();

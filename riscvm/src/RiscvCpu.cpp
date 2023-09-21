@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "RiscvCpu.h"
-#include "InstrFormats.h"
 #include "riscv.h"
 
 RiscvCpu::RiscvCpu(Memory& memory) : iMemory(memory)
@@ -84,7 +83,6 @@ res_t RiscvCpu::on16bitInstr(const uint8_t opcode, const uint16_t instr16)
 
 res_t RiscvCpu::on32bitInstr(const uint8_t opcode, const uint32_t instr32)
 {
-	res_t res = res_t::OK;
 	switch (opcode) {
 		case 0b00110111:
 			return LUI(instr32);
@@ -301,7 +299,7 @@ res_t RiscvCpu::JALR(const uint32_t instr32)
 	if (rd != 0)
 		iRegFile.x[rd] = iRegFile.pc + 4;
 	const uint32_t newPc = ((iRegFile.x[rs1] + off) & ~1);
-	if (newPc & 0b11 != 0) {
+	if ((newPc & 0b11) != 0) {
 		// TODO - support of 16-bit instr.
 		return res_t::MISALIGNED;
 	}

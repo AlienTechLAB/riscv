@@ -20,6 +20,11 @@ res_t Memory::init(const uint64_t memSize)
 	return res_t::OK;
 }
 
+uint64_t Memory::size()
+{
+	return iSize;
+}
+
 uint8_t* Memory::data()
 {
 	return pData;

@@ -9,6 +9,7 @@ class Memory
 public:
 	~Memory();
 	res_t init(uint64_t memSize);
+	uint64_t size();
 	uint8_t* data();
 	void clear();
 	res_t load(const char* filename, uint64_t address = 0);
