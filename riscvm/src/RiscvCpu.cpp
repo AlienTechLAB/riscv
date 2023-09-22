@@ -3,7 +3,8 @@
 #include "RiscvCpu.h"
 #include "riscv.h"
 
-RiscvCpu::RiscvCpu(Memory& memory) : iMemory(memory)
+RiscvCpu::RiscvCpu(Memory& memory)
+	: iMemory(memory)
 {
 	memset(&iRegFile, 0, sizeof(RegFile));
 }
@@ -25,7 +26,7 @@ res_t RiscvCpu::nextInstr()
 	opcode &= 0b01111111;
 	if ((opcode & 0b00000011) != 0b00000011) {
 		uint16_t instr16;
-		if (iMemory.readUint16(instr16, iRegFile.pc) == res_t::ERROR)
+		if (iMemory.readUint16(instr16, iRegFile.pc, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		if (on16bitInstr(opcode, instr16) == res_t::ERROR)
 			return res_t::ERROR;
@@ -33,7 +34,7 @@ res_t RiscvCpu::nextInstr()
 	}
 	if ((opcode & 0b00011111) != 0b00011111) {
 		uint32_t instr32;
-		if (iMemory.readUint32(instr32, iRegFile.pc) == res_t::ERROR)
+		if (iMemory.readUint32(instr32, iRegFile.pc, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		if (on32bitInstr(opcode, instr32) == res_t::ERROR)
 			return res_t::ERROR;
@@ -41,10 +42,10 @@ res_t RiscvCpu::nextInstr()
 	}
 	if ((opcode & 0b00111111) == 0b00011111) {
 		uint32_t instr32;
-		if (iMemory.readUint32(instr32, iRegFile.pc) == res_t::ERROR)
+		if (iMemory.readUint32(instr32, iRegFile.pc, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		uint16_t instr16;
-		if (iMemory.readUint16(instr16, iRegFile.pc + 4) == res_t::ERROR)
+		if (iMemory.readUint16(instr16, iRegFile.pc + 4, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		if (on48bitInstr(opcode, instr32, instr16) == res_t::ERROR)
 			return res_t::ERROR;
@@ -52,7 +53,7 @@ res_t RiscvCpu::nextInstr()
 	}
 	if ((opcode & 0b01111111) == 0b00111111) {
 		uint64_t instr64;
-		if (iMemory.readUint64(instr64, iRegFile.pc) == res_t::ERROR)
+		if (iMemory.readUint64(instr64, iRegFile.pc, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		if (on64bitInstr(opcode, instr64) == res_t::ERROR)
 			return res_t::ERROR;
@@ -392,7 +393,7 @@ res_t RiscvCpu::LH(const uint32_t instr32)
 		const int32_t off = getIimm(instr32);
 		const uint8_t rs1 = getRs1(instr32);
 		int16_t shword;
-		if (iMemory.readInt16(shword, iRegFile.x[rs1] + off) == res_t::ERROR)
+		if (iMemory.readInt16(shword, iRegFile.x[rs1] + off, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		const int32_t signExtended = static_cast<int32_t>(shword);
 		iRegFile.x[rd] = static_cast<uint32_t>(signExtended);
@@ -409,7 +410,7 @@ res_t RiscvCpu::LW(const uint32_t instr32)
 		const int32_t off = getIimm(instr32);
 		const uint8_t rs1 = getRs1(instr32);
 		int32_t sword;
-		if (iMemory.readInt32(sword, iRegFile.x[rs1] + off) == res_t::ERROR)
+		if (iMemory.readInt32(sword, iRegFile.x[rs1] + off, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		iRegFile.x[rd] = static_cast<uint32_t>(sword);
 	}
@@ -441,7 +442,7 @@ res_t RiscvCpu::LHU(const uint32_t instr32)
 		const int32_t off = getIimm(instr32);
 		const uint8_t rs1 = getRs1(instr32);
 		uint16_t hword;
-		if (iMemory.readUint16(hword, iRegFile.x[rs1] + off) == res_t::ERROR)
+		if (iMemory.readUint16(hword, iRegFile.x[rs1] + off, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
 		iRegFile.x[rd] = static_cast<uint32_t>(hword);
 	}
@@ -469,7 +470,7 @@ res_t RiscvCpu::SH(const uint32_t instr32)
 	const uint8_t rs1 = getRs1(instr32);
 	const uint8_t rs2 = getRs2(instr32);
 	uint16_t hword = static_cast<uint16_t>(iRegFile.x[rs2] & 0xFFFF);
-	if (iMemory.writeUint16(hword, iRegFile.x[rs1] + off) == res_t::ERROR)
+	if (iMemory.writeUint16(hword, iRegFile.x[rs1] + off, iEndian) == res_t::ERROR)
 		return res_t::ERROR;
 	iRegFile.pc += 4;
 	return res_t::OK;
@@ -481,7 +482,7 @@ res_t RiscvCpu::SW(const uint32_t instr32)
 	const int32_t off = getSimm(instr32);
 	const uint8_t rs1 = getRs1(instr32);
 	const uint8_t rs2 = getRs2(instr32);
-	if (iMemory.writeUint32(iRegFile.x[rs2], iRegFile.x[rs1] + off) == res_t::ERROR)
+	if (iMemory.writeUint32(iRegFile.x[rs2], iRegFile.x[rs1] + off, iEndian) == res_t::ERROR)
 		return res_t::ERROR;
 	iRegFile.pc += 4;
 	return res_t::OK;
