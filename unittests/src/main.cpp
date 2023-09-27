@@ -364,5 +364,6 @@ int main()
 	printf("\n\n\n");
 	readWriteTests();
 	endianTests();
+	// TODO - end memory tests
 	return 0;
 }

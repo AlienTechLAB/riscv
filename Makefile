@@ -45,7 +45,8 @@ RVM_BINPATH = riscvm/bin/
 RVM_INC = riscvm/inc/
 RVM_SRC = Main.cpp\
 Memory.cpp\
-RiscvCpu.cpp
+RiscvCpu.cpp\
+general.cpp
 RVM_SRCS = $(addprefix $(RVM_SRCPATH), $(RVM_SRC))
 RVM_OBJS = $(addprefix $(RVM_OBJPATH), $(subst .cpp,.o, $(RVM_SRC)))
 
@@ -62,7 +63,8 @@ UTSRCPATH = unittests/src/
 UTOBJPATH = unittests/obj/
 UTBINPATH = unittests/bin/
 UTSRCS = unittests/src/main.cpp\
-riscvm/src/Memory.cpp
+riscvm/src/Memory.cpp\
+riscvm/src/general.cpp
 UTOBJS = $(subst src,obj, $(subst .cpp,.o, $(UTSRCS)))
 
 unittests: $(UTOBJS) utmkdirs

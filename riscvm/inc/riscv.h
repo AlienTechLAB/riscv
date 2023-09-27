@@ -2,12 +2,7 @@
 #define RISCV_H
 
 #include <stdint.h>
-
-enum class res_t {
-	OK,
-	ERROR,
-	MISALIGNED
-};
+#include "general.h"
 
 enum class Endian {
 	LITTLE,
