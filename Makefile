@@ -43,7 +43,7 @@ RVM_SRCPATH = riscvm/src/
 RVM_OBJPATH = riscvm/obj/
 RVM_BINPATH = riscvm/bin/
 RVM_INC = riscvm/inc/
-RVM_SRC = Main.cpp\
+RVM_SRC = main.cpp\
 Memory.cpp\
 RiscvCpu.cpp\
 general.cpp

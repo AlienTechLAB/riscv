@@ -17,10 +17,11 @@ public:
 	void setEndian(Endian endian);
 	res_t nextInstr();
 
+	RegFile iRegFile;
+
 private:
 	Memory& iMemory;
 	uint64_t iMemSize{ 0 };
-	RegFile iRegFile;
 	Endian iEndian{ Endian::LITTLE };
 
 	res_t on16bitInstr(uint8_t opcode, uint16_t instr16);

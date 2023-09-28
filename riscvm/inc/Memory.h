@@ -12,8 +12,6 @@ public:
 	uint64_t size();
 	uint8_t* data();
 	void clear();
-	res_t load(const char* filename, uint64_t address = 0);
-	res_t save(const char* filename, uint64_t address, uint64_t size);
 	res_t readInt8(int8_t& value, uint64_t address);
 	res_t writeInt8(int8_t value, uint64_t address);
 	res_t readUint8(uint8_t& value, uint64_t address);

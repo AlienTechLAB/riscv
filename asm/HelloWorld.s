@@ -6,8 +6,8 @@ _start:
     addi a0,a0,%lo(0xFFC00)
     add  a1,x0,a0
     addi a1,a1,1
-    lui  a2,%hi(0x3C)    # 0x3C = message
-    addi a2,a2,%lo(0x3C) # 0x3C = message
+    lui  a2,%hi(message)
+    addi a2,a2,%lo(message)
 
 copy_loop:
     lb a3,0(a2)
@@ -22,5 +22,6 @@ copy_done:
     sb x1,0(a0)
     j _start
 
+.data
 message:
     .string "Hello, World!"

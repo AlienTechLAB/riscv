@@ -232,5 +232,6 @@ inline void wrUint64BE(uint8_t* buffer, const uint64_t value)
 res_t getFileSize(const char* filename, uint64_t& fileSize);
 res_t loadFile(const char* filename, uint8_t* buffer, uint64_t offset, uint64_t size);
 res_t saveFile(const char* filename, uint8_t* buffer, uint64_t size);
+res_t loadElf(const char* filename, uint8_t* memory, uint64_t& startAddr);
 
 #endif	// GENERAL_H

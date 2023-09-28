@@ -35,27 +35,6 @@ void Memory::clear()
 	memset(pData, 0, iSize);
 }
 
-res_t Memory::load(const char* filename, const uint64_t address)
-{
-	if (address >= iSize)
-		return res_t::ERROR;
-	uint64_t fileSize = 0;
-	if (getFileSize(filename, fileSize) == res_t::ERROR)
-		return res_t::ERROR;
-	if (iSize - address < fileSize)
-		return res_t::ERROR;
-	return loadFile(filename, pData + address, 0, fileSize);
-}
-
-res_t Memory::save(const char* filename, const uint64_t address, const uint64_t size)
-{
-	if (address >= iSize || iSize - address < size)
-		return res_t::ERROR;
-	if (saveFile(filename, pData + address, size) == res_t::ERROR)
-		return res_t::ERROR;
-	return res_t::OK;
-}
-
 res_t Memory::readInt8(int8_t& value, const uint64_t address)
 {
 	if (address >= iSize)
