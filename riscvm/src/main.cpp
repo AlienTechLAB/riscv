@@ -1,7 +1,7 @@
 #include <cstring>
 #include <stdint.h>
 #include <stdio.h>
-#include "Memory.h"
+#include "memory.h"
 #include "RiscvCpu.h"
 
 char GlobalPrintBuffer[256];

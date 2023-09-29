@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
-#include "Memory.h"
+#include "memory.h"
 
 void rdwr8Test();
 void rdwr16Test(const Endian endian);

@@ -2,7 +2,7 @@
 #define RISCVCPU_H
 
 #include <stdint.h>
-#include "Memory.h"
+#include "memory.h"
 
 struct RegFile
 {

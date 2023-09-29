@@ -1,0 +1,8 @@
+*.o
+*.json
+*.sh
+.clang-format
+NOTES.txt
+riscvm
+unittests
+HelloWorld

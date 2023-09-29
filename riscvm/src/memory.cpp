@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "general.h"
-#include "Memory.h"
+#include "memory.h"
 
 Memory::~Memory()
 {
