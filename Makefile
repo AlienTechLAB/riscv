@@ -43,10 +43,10 @@ RVM_SRCPATH = riscvm/src/
 RVM_OBJPATH = riscvm/obj/
 RVM_BINPATH = riscvm/bin/
 RVM_INC = riscvm/inc/
-RVM_SRC = main.cpp\
-memory.cpp\
+RVM_SRC = Main.cpp\
+Memory.cpp\
 RiscvCpu.cpp\
-general.cpp
+General.cpp
 RVM_SRCS = $(addprefix $(RVM_SRCPATH), $(RVM_SRC))
 RVM_OBJS = $(addprefix $(RVM_OBJPATH), $(subst .cpp,.o, $(RVM_SRC)))
 
@@ -59,27 +59,29 @@ vmmkdirs:
 
 
 
-UTSRCPATH = unittests/src/
-UTOBJPATH = unittests/obj/
-UTBINPATH = unittests/bin/
-UTSRCS = unittests/src/main.cpp\
-riscvm/src/memory.cpp\
-riscvm/src/general.cpp
-UTOBJS = $(subst src,obj, $(subst .cpp,.o, $(UTSRCS)))
+UT_SRCPATH = unittests/src/
+UT_OBJPATH = unittests/obj/
+UT_BINPATH = unittests/bin/
+UT_INC = unittests/inc/
+UT_SRC = unittests/src/Main.cpp\
+unittests/src/MemoryTests.cpp\
+riscvm/src/Memory.cpp\
+riscvm/src/General.cpp
+UT_OBJS = $(subst src,obj, $(subst .cpp,.o, $(UT_SRC)))
 
-unittests: $(UTOBJS) utmkdirs
-	$(CC) $(CFLAGS) $(UTOBJS) -o $(UTBINPATH)$@
-$(UTOBJPATH)%.o: $(UTSRCPATH)%.cpp utmkdirs
-	$(CC) $(CFLAGS) -I$(RVM_INC) -c $< -o $@
+unittests: $(UT_OBJS) utmkdirs
+	$(CC) $(CFLAGS) $(UT_OBJS) -o $(UT_BINPATH)$@
+$(UT_OBJPATH)%.o: $(UT_SRCPATH)%.cpp utmkdirs
+	$(CC) $(CFLAGS) -I$(RVM_INC) -I$(UT_INC) -c $< -o $@
 utmkdirs:
-	mkdir -p $(UTBINPATH) $(UTOBJPATH)
+	mkdir -p $(UT_BINPATH) $(UT_OBJPATH)
 
 
 
 clean:
 	$(RM) -rf $(RVM_BINPATH)
 	$(RM) -rf $(RVM_OBJPATH)
-	$(RM) -rf $(UTBINPATH)
-	$(RM) -rf $(UTOBJPATH)
+	$(RM) -rf $(UT_BINPATH)
+	$(RM) -rf $(UT_OBJPATH)
 
 .PHONY: clean utmkdirs vmmkdirs

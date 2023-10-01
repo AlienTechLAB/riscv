@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "RiscvCpu.h"
-#include "riscv.h"
+#include "Riscv.h"
 
 RiscvCpu::RiscvCpu(Memory& memory)
 	: iMemory(memory)
