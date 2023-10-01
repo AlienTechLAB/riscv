@@ -65,6 +65,7 @@ UT_BINPATH = unittests/bin/
 UT_INC = unittests/inc/
 UT_SRC = unittests/src/Main.cpp\
 unittests/src/MemoryTests.cpp\
+unittests/src/DecoderTests.cpp\
 riscvm/src/Memory.cpp\
 riscvm/src/General.cpp
 UT_OBJS = $(subst src,obj, $(subst .cpp,.o, $(UT_SRC)))

@@ -2,7 +2,8 @@
 *.json
 *.sh
 .clang-format
+asm/bin/*
+riscvm/bin/*
+unittests/bin/*
 NOTES.txt
-riscvm
-unittests
 HelloWorld
