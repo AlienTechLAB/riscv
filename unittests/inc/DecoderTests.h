@@ -10,6 +10,7 @@ namespace DecoderTests
 void nzuimm549623Test();
 void funct3Test();
 void rdpTest();
+void uimm5326Test();
 void runTests();
 
 }

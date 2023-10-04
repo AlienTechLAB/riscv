@@ -99,9 +99,11 @@ res_t RiscvCpu::op_00(const uint16_t instr16)
 	switch (funct3(instr16)) {
 		case 0b000:
 			return C_ADDI4SPN(instr16);
-			break;
+		case 0b010:
+			return C_LW(instr16);
+		
 	}
-	return res_t::ERROR;
+	return res_t::ILLEGAL_INSTR;
 }
 
 res_t RiscvCpu::op_01(const uint16_t instr16)
@@ -297,6 +299,16 @@ res_t RiscvCpu::C_ADDI4SPN(const uint16_t instr16)
 	if (nzuimm == 0)
 		return res_t::ILLEGAL_INSTR;  // "RES" - reserved, see: Section 12.7 "RVC Instruction Set Listings", page 81.
 	iRegFile.x[rd(instr16)] = iRegFile.x[2] + nzuimm;
+	return res_t::OK;
+}
+
+res_t RiscvCpu::C_LW(const uint16_t instr16)
+{
+	// c.lw rd',uimm(rs1')
+	const uint64_t addr = iRegFile.x[rs1(instr16)] + uimm5326(instr16);
+	const res_t resRead = iMemory.readUint32(iRegFile.x[rd(instr16)], addr, iEndian);
+	if (resRead != res_t::OK)
+		return resRead;
 	return res_t::OK;
 }
 

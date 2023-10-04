@@ -40,11 +40,22 @@ void rdpTest()
 	printf("rdpTest OK\n");
 }
 
+void uimm5326Test()
+{
+	assert(uimm5326(static_cast<uint16_t>(1 << 5)) == (1 << 6));
+	assert(uimm5326(static_cast<uint16_t>(1 << 6)) == (1 << 2));
+	assert(uimm5326(static_cast<uint16_t>(1 << 10)) == (1 << 3));
+	assert(uimm5326(static_cast<uint16_t>(1 << 11)) == (1 << 4));
+	assert(uimm5326(static_cast<uint16_t>(1 << 12)) == (1 << 5));
+	printf("uimm5326Test OK\n");
+}
+
 void runTests()
 {
 	nzuimm549623Test();
 	funct3Test();
 	rdpTest();
+	uimm5326Test();
 }
 
 }

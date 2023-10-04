@@ -116,12 +116,12 @@ inline int32_t getJimm(const uint32_t instr)
 //-----------------------------------------------------------------------------------------------------
 
 // nzuimm[5:4|9:6|2|3]
-inline uint32_t nzuimm549623(uint16_t instr)
+inline uint16_t nzuimm549623(uint16_t instr)
 {
-	const uint32_t b3  = ((instr & 0b0000000000100000) >> 2);
-	const uint32_t b2  = ((instr & 0b0000000001000000) >> 4);
-	const uint32_t b96 = ((instr & 0b0000011110000000) >> 1);
-	const uint32_t b54 = ((instr & 0b0001100000000000) >> 7);
+	const uint16_t b3  = ((instr & 0b0000000000100000) >> 2);
+	const uint16_t b2  = ((instr & 0b0000000001000000) >> 4);
+	const uint16_t b96 = ((instr & 0b0000011110000000) >> 1);
+	const uint16_t b54 = ((instr & 0b0001100000000000) >> 7);
 	return b96 | b54 | b3 | b2;
 }
 
@@ -136,5 +136,20 @@ inline uint8_t rd(const uint16_t instr)
 	return ((instr >> 2) & 0b111) + 8;
 }
 
+inline uint8_t rs1(const uint16_t instr)
+{
+	// For "+ 8" see Table 12.2, page 71.
+	return ((instr >> 7) & 0b111) + 8;
+}
+
+inline uint8_t uimm5326(const uint16_t instr)
+{
+	const uint8_t b5 = ((instr & 0b0001000000000000) >> 7);
+	const uint8_t b4 = ((instr & 0b0000100000000000) >> 7);
+	const uint8_t b3 = ((instr & 0b0000010000000000) >> 7);
+	const uint8_t b2 = ((instr & 0b0000000001000000) >> 4);
+	const uint8_t b6 = ((instr & 0b0000000000100000) << 1);
+	return b5 | b4 | b3 | b2 | b6;
+}
 
 #endif	// RISCV_H

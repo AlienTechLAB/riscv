@@ -46,6 +46,7 @@ private:
 
 	// RVC instructions.
 	res_t C_ADDI4SPN(uint16_t instr16);
+	res_t C_LW(uint16_t instr16);
 
 	// RV32I instructions.
 	res_t LUI(uint32_t instr32);
