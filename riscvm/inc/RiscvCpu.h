@@ -24,11 +24,12 @@ private:
 	uint64_t iMemSize{ 0 };
 	Endian iEndian{ Endian::LITTLE };
 
-	res_t on16bitInstr(uint8_t opcode, uint16_t instr16);
+	res_t on16bitInstr(uint16_t instr16);
+	res_t op_00(const uint16_t instr16);
+	res_t op_01(const uint16_t instr16);
+	res_t op_10(const uint16_t instr16);
+
 	res_t on32bitInstr(uint8_t opcode, uint32_t instr32);
-	res_t on48bitInstr(uint8_t opcode, uint32_t instr32, uint16_t instr16);
-	res_t on64bitInstr(uint8_t opcode, uint64_t instr64);
-	res_t onUpTo192bitInstr(uint8_t opcode, uint8_t nnn);
 	res_t opcode_01100011(uint32_t instr32);
 	res_t opcode_00000011(uint32_t instr32);
 	res_t opcode_00010011(uint32_t instr32);
@@ -38,7 +39,15 @@ private:
 	res_t opcode_00110011_000(uint32_t instr32);
 	res_t opcode_00110011_101(uint32_t instr32);
 	res_t opcode_00100011(uint32_t instr32);
+	
+	res_t on48bitInstr(uint8_t opcode, uint32_t instr32, uint16_t instr16);
+	res_t on64bitInstr(uint8_t opcode, uint64_t instr64);
+	res_t onUpTo192bitInstr(uint8_t opcode, uint8_t nnn);
 
+	// RVC instructions.
+	res_t C_ADDI4SPN(uint16_t instr16);
+
+	// RV32I instructions.
 	res_t LUI(uint32_t instr32);
 	res_t AUIPC(uint32_t instr32);
 	res_t JAL(uint32_t instr32);

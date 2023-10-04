@@ -7,7 +7,9 @@
 namespace DecoderTests
 {
 
-void getCIWimmTest();
+void nzuimm549623Test();
+void funct3Test();
+void rdpTest();
 void runTests();
 
 }

@@ -34,7 +34,7 @@ inline uint8_t getRd(const uint32_t instr)
 	return (instr >> 7) & 0b00011111;
 }
 
-inline uint8_t getFunct3(const uint32_t instr)
+inline uint8_t funct3(const uint32_t instr)
 {
 	return (instr >> 12) & 0b00000111;
 }
@@ -115,7 +115,8 @@ inline int32_t getJimm(const uint32_t instr)
 // Table 12.4: "Instruction listing for RVC, Quadrant 0."
 //-----------------------------------------------------------------------------------------------------
 
-inline uint32_t getCIWimm(uint16_t instr)
+// nzuimm[5:4|9:6|2|3]
+inline uint32_t nzuimm549623(uint16_t instr)
 {
 	const uint32_t b3  = ((instr & 0b0000000000100000) >> 2);
 	const uint32_t b2  = ((instr & 0b0000000001000000) >> 4);
@@ -123,5 +124,17 @@ inline uint32_t getCIWimm(uint16_t instr)
 	const uint32_t b54 = ((instr & 0b0001100000000000) >> 7);
 	return b96 | b54 | b3 | b2;
 }
+
+inline uint8_t funct3(const uint16_t instr)
+{
+	return instr >> 13;
+}
+
+inline uint8_t rd(const uint16_t instr)
+{
+	// For "+ 8" see Table 12.2, page 71.
+	return ((instr >> 2) & 0b111) + 8;
+}
+
 
 #endif	// RISCV_H

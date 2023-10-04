@@ -28,7 +28,7 @@ res_t RiscvCpu::nextInstr()
 		uint16_t instr16;
 		if (iMemory.readUint16(instr16, iRegFile.pc, iEndian) == res_t::ERROR)
 			return res_t::ERROR;
-		if (on16bitInstr(opcode, instr16) == res_t::ERROR)
+		if (on16bitInstr(instr16) == res_t::ERROR)
 			return res_t::ERROR;
 		return res_t::OK;
 	}
@@ -76,9 +76,41 @@ res_t RiscvCpu::nextInstr()
 	return res_t::ERROR;
 }
 
-res_t RiscvCpu::on16bitInstr(const uint8_t opcode, const uint16_t instr16)
+res_t RiscvCpu::on16bitInstr(const uint16_t instr16)
 {
-	// TODO - extencion "C"
+	// TODO - check extencion "C"
+	if (instr16 == 0)
+		return res_t::ILLEGAL_INSTR;
+	const uint8_t op = instr16 & 0b11;
+	switch (op) {
+		case 0b00:
+			return op_00(instr16);
+		case 0b01:
+			return op_01(instr16);
+		case 0b10:
+			return op_10(instr16);
+	};
+	return res_t::ILLEGAL_INSTR;
+}
+
+// Table 12.4: "Instruction listing for RVC, Quadrant 0."
+res_t RiscvCpu::op_00(const uint16_t instr16)
+{
+	switch (funct3(instr16)) {
+		case 0b000:
+			return C_ADDI4SPN(instr16);
+			break;
+	}
+	return res_t::ERROR;
+}
+
+res_t RiscvCpu::op_01(const uint16_t instr16)
+{
+	return res_t::ERROR;
+}
+
+res_t RiscvCpu::op_10(const uint16_t instr16)
+{
 	return res_t::ERROR;
 }
 
@@ -104,7 +136,142 @@ res_t RiscvCpu::on32bitInstr(const uint8_t opcode, const uint32_t instr32)
 		case 0b00100011:
 			return opcode_00100011(instr32);
 	};
-	return res_t::ERROR;
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_01100011(const uint32_t instr32)
+{
+	switch (funct3(instr32)) {
+		case 0b000:
+			return BEQ(instr32);
+		case 0b001:
+			return BNE(instr32);
+		case 0b100:
+			return BLT(instr32);
+		case 0b101:
+			return BGE(instr32);
+		case 0b110:
+			return BLTU(instr32);
+		case 0b111:
+			return BGEU(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00000011(const uint32_t instr32)
+{
+	switch (funct3(instr32)) {
+		case 0b000:
+			return LB(instr32);
+		case 0b001:
+			return LH(instr32);
+		case 0b010:
+			return LW(instr32);
+		case 0b100:
+			return LBU(instr32);
+		case 0b101:
+			return LHU(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00010011(const uint32_t instr32)
+{
+	switch (funct3(instr32)) {
+		case 0b000:
+			return ADDI(instr32);
+		case 0b001:
+			return opcode_00010011_001(instr32);
+		case 0b010:
+			return SLTI(instr32);
+		case 0b011:
+			return SLTIU(instr32);
+		case 0b100:
+			return XORI(instr32);
+		case 0b101:
+			return opcode_00010011_101(instr32);
+		case 0b110:
+			return ORI(instr32);
+		case 0b111:
+			return ANDI(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00010011_001(const uint32_t instr32)
+{
+	if (getFunct7(instr32) == 0b0000000)
+		return SLLI(instr32);
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00010011_101(const uint32_t instr32)
+{
+	switch (getFunct7(instr32)) {
+		case 0b0000000:
+			return SRLI(instr32);
+		case 0b0100000:
+			return SRAI(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00110011(const uint32_t instr32)
+{
+	switch (funct3(instr32)) {
+		case 0b000:
+			return opcode_00110011_000(instr32);
+		case 0b001:
+			return SLL(instr32);
+		case 0b010:
+			return SLT(instr32);
+		case 0b011:
+			return SLTU(instr32);
+		case 0b100:
+			return XOR(instr32);
+		case 0b101:
+			return opcode_00110011_101(instr32);
+		case 0b110:
+			return OR(instr32);
+		case 0b111:
+			return AND(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00110011_000(const uint32_t instr32)
+{
+	switch (getFunct7(instr32)) {
+		case 0b0000000:
+			return ADD(instr32);
+		case 0b0100000:
+			return SUB(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00110011_101(const uint32_t instr32)
+{
+	switch (getFunct7(instr32)) {
+		case 0b0000000:
+			return SRL(instr32);
+		case 0b0100000:
+			return SRA(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
+}
+
+res_t RiscvCpu::opcode_00100011(uint32_t instr32)
+{
+	switch (funct3(instr32)) {
+		case 0b000:
+			return SB(instr32);
+		case 0b001:
+			return SH(instr32);
+		case 0b010:
+			return SW(instr32);
+	}
+	return res_t::ILLEGAL_INSTR;
 }
 
 res_t RiscvCpu::on48bitInstr(const uint8_t opcode, const uint32_t instr32, const uint16_t instr16)
@@ -123,139 +290,14 @@ res_t RiscvCpu::onUpTo192bitInstr(const uint8_t opcode, const uint8_t nnn)
 	return res_t::ERROR;
 }
 
-res_t RiscvCpu::opcode_01100011(const uint32_t instr32)
+res_t RiscvCpu::C_ADDI4SPN(const uint16_t instr16)
 {
-	switch (getFunct3(instr32)) {
-		case 0b000:
-			return BEQ(instr32);
-		case 0b001:
-			return BNE(instr32);
-		case 0b100:
-			return BLT(instr32);
-		case 0b101:
-			return BGE(instr32);
-		case 0b110:
-			return BLTU(instr32);
-		case 0b111:
-			return BGEU(instr32);
-	}
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00000011(const uint32_t instr32)
-{
-	switch (getFunct3(instr32)) {
-		case 0b000:
-			return LB(instr32);
-		case 0b001:
-			return LH(instr32);
-		case 0b010:
-			return LW(instr32);
-		case 0b100:
-			return LBU(instr32);
-		case 0b101:
-			return LHU(instr32);
-	}
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00010011(const uint32_t instr32)
-{
-	switch (getFunct3(instr32)) {
-		case 0b000:
-			return ADDI(instr32);
-		case 0b001:
-			return opcode_00010011_001(instr32);
-		case 0b010:
-			return SLTI(instr32);
-		case 0b011:
-			return SLTIU(instr32);
-		case 0b100:
-			return XORI(instr32);
-		case 0b101:
-			return opcode_00010011_101(instr32);
-		case 0b110:
-			return ORI(instr32);
-		case 0b111:
-			return ANDI(instr32);
-	}
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00010011_001(const uint32_t instr32)
-{
-	if (getFunct7(instr32) == 0b0000000)
-		return SLLI(instr32);
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00010011_101(const uint32_t instr32)
-{
-	switch (getFunct7(instr32)) {
-		case 0b0000000:
-			return SRLI(instr32);
-		case 0b0100000:
-			return SRAI(instr32);
-	}
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00110011(const uint32_t instr32)
-{
-	switch (getFunct3(instr32)) {
-		case 0b000:
-			return opcode_00110011_000(instr32);
-		case 0b001:
-			return SLL(instr32);
-		case 0b010:
-			return SLT(instr32);
-		case 0b011:
-			return SLTU(instr32);
-		case 0b100:
-			return XOR(instr32);
-		case 0b101:
-			return opcode_00110011_101(instr32);
-		case 0b110:
-			return OR(instr32);
-		case 0b111:
-			return AND(instr32);
-	}
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00110011_000(const uint32_t instr32)
-{
-	switch (getFunct7(instr32)) {
-		case 0b0000000:
-			return ADD(instr32);
-		case 0b0100000:
-			return SUB(instr32);
-	}
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00110011_101(const uint32_t instr32)
-{
-	switch (getFunct7(instr32)) {
-		case 0b0000000:
-			return SRL(instr32);
-		case 0b0100000:
-			return SRA(instr32);
-	}
-	return res_t::ERROR;
-}
-
-res_t RiscvCpu::opcode_00100011(uint32_t instr32)
-{
-	switch (getFunct3(instr32)) {
-		case 0b000:
-			return SB(instr32);
-		case 0b001:
-			return SH(instr32);
-		case 0b010:
-			return SW(instr32);
-	}
-	return res_t::ERROR;
+	// c.addi4spn rd',uimm
+	const uint32_t nzuimm = nzuimm549623(instr16);
+	if (nzuimm == 0)
+		return res_t::ILLEGAL_INSTR;  // "RES" - reserved, see: Section 12.7 "RVC Instruction Set Listings", page 81.
+	iRegFile.x[rd(instr16)] = iRegFile.x[2] + nzuimm;
+	return res_t::OK;
 }
 
 res_t RiscvCpu::LUI(const uint32_t instr32)
@@ -292,7 +334,7 @@ res_t RiscvCpu::JAL(const uint32_t instr32)
 res_t RiscvCpu::JALR(const uint32_t instr32)
 {
 	// jalr rd,rs1,offset
-	if (getFunct3(instr32) != 0b000)
+	if (funct3(instr32) != 0b000)
 		return res_t::ERROR;
 	const int32_t off = getIimm(instr32);
 	const uint8_t rd = getRd(instr32);

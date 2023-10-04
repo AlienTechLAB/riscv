@@ -6,7 +6,8 @@
 enum class res_t {
 	OK,
 	ERROR,
-	MISALIGNED
+	MISALIGNED,
+	ILLEGAL_INSTR
 };
 
 inline int16_t rdInt16LE(const uint8_t* buffer)
