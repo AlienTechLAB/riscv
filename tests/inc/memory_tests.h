@@ -2,12 +2,17 @@
 #define MEMORYTESTS_H
 
 #include <stdint.h>
-#include "Riscv.h"
+#include "riscv.h"
+#include "types.h"
+
+using namespace riscv;
+
+namespace tests {
 
 void rdwr8Test();
-void rdwr16Test(const Endian endian);
-void rdwr32Test(const Endian endian);
-void rdwr64Test(const Endian endian);
+void rdwr16Test(endian_t endian);
+void rdwr32Test(endian_t endian);
+void rdwr64Test(endian_t endian);
 void readWriteTests();
 void littleEndianInt16Test();
 void littleEndianUint16Test();
@@ -23,4 +28,6 @@ void bigEndianInt64Test();
 void bigEndianUint64Test();
 void endianTests();
 
-#endif // MEMORYTESTS_H
+}  // namespace tests
+
+#endif	// MEMORYTESTS_H

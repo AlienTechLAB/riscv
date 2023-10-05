@@ -2,13 +2,9 @@
 #define GENERAL_H
 
 #include <stdint.h>
+#include "types.h"
 
-enum class res_t {
-	OK,
-	ERROR,
-	MISALIGNED,
-	ILLEGAL_INSTR
-};
+using namespace riscv;
 
 inline int16_t rdInt16LE(const uint8_t* buffer)
 {
@@ -230,9 +226,9 @@ inline void wrUint64BE(uint8_t* buffer, const uint64_t value)
 	buffer[0] = static_cast<uint8_t>((value >> 56) & 0xFF);
 }
 
-res_t getFileSize(const char* filename, uint64_t& fileSize);
-res_t loadFile(const char* filename, uint8_t* buffer, uint64_t offset, uint64_t size);
-res_t saveFile(const char* filename, uint8_t* buffer, uint64_t size);
-res_t loadElf(const char* filename, uint8_t* memory, uint64_t& startAddr);
+err_t getFileSize(const char* filename, uint64_t& fileSize);
+err_t loadFile(const char* filename, uint8_t* buffer, uint64_t offset, uint64_t size);
+err_t saveFile(const char* filename, uint8_t* buffer, uint64_t size);
+err_t loadElf(const char* filename, uint8_t* memory, uint64_t& startAddr);
 
 #endif	// GENERAL_H

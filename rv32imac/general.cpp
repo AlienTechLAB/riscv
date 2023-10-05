@@ -2,80 +2,81 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <elf.h>
-#include "General.h"
+#include <cassert>
+#include "general.h"
 
-res_t getFileSize(const char* filename, uint64_t& fileSize)
+err_t getFileSize(const char* filename, uint64_t& fileSize)
 {
 	if (filename == nullptr)
-		return res_t::ERROR;
+		return err_t::error;
 	struct stat stats;
 	if (stat(filename, &stats) != 0)
-		return res_t::ERROR;
+		return err_t::error;
 	if (!S_ISREG(stats.st_mode))
-		return res_t::ERROR;
+		return err_t::error;
 	fileSize = static_cast<uint64_t>(stats.st_size);
-	return res_t::OK;
+	return err_t::ok;
 }
 
-res_t loadFile(const char* filename, uint8_t* buffer, uint64_t offset, uint64_t size)
+err_t loadFile(const char* filename, uint8_t* buffer, uint64_t offset, uint64_t size)
 {
 	if (filename == nullptr || buffer == nullptr)
-		return res_t::ERROR;
+		return err_t::error;
 	uint64_t fileSize = 0;
-	if (getFileSize(filename, fileSize) == res_t::ERROR)
-		return res_t::ERROR;
+	if (getFileSize(filename, fileSize) == err_t::error)
+		return err_t::error;
 	if ((offset >= fileSize) || (size > fileSize - offset))
-		return res_t::ERROR;
+		return err_t::error;
 	FILE* file = fopen(filename, "rb");
 	if (file == nullptr)
-		return res_t::ERROR;
+		return err_t::error;
 	if (fseek(file, offset, SEEK_SET) != 0) {
 		fclose(file);
-		return res_t::ERROR;
+		return err_t::error;
 	}
 	if (fread(buffer, 1, size, file) != size) {
 		fclose(file);
-		return res_t::ERROR;
+		return err_t::error;
 	}
 	if (fclose(file))
-		return res_t::ERROR;
-	return res_t::OK;
+		return err_t::error;
+	return err_t::ok;
 }
 
-res_t saveFile(const char* filename, uint8_t* buffer, uint64_t size)
+err_t saveFile(const char* filename, uint8_t* buffer, uint64_t size)
 {
 	if (filename == nullptr || buffer == nullptr)
-		return res_t::ERROR;
+		return err_t::error;
 	FILE* file = fopen(filename, "wb");
 	if (file == nullptr)
-		return res_t::ERROR;
+		return err_t::error;
 	if (fwrite(buffer, 1, size, file) != size) {
 		fclose(file);
-		return res_t::ERROR;
+		return err_t::error;
 	}
 	if (fflush(file) != 0)
-		return res_t::ERROR;
+		return err_t::error;
 	if (fclose(file))
-		return res_t::ERROR;
-	return res_t::OK;
+		return err_t::error;
+	return err_t::ok;
 }
 
 // Simple ELF loader. TODO
-res_t loadElf(const char* filename, uint8_t* memory, uint64_t& startAddr)
+err_t loadElf(const char* filename, uint8_t* memory, uint64_t& startAddr)
 {
 	uint64_t fileSize = 0;
-	if (getFileSize(filename, fileSize) == res_t::ERROR)
-		return res_t::ERROR;
+	if (getFileSize(filename, fileSize) == err_t::error)
+		return err_t::error;
 	uint8_t* buffer = new uint8_t[fileSize];
 	if (buffer == nullptr)
-		return res_t::ERROR;
-	if (::loadFile(filename, buffer, 0, fileSize) == res_t::ERROR) {
+		return err_t::error;
+	if (::loadFile(filename, buffer, 0, fileSize) == err_t::error) {
 		delete[] buffer;
 		buffer = nullptr;
 	}
 	const Elf64_Ehdr& header = *reinterpret_cast<Elf64_Ehdr*>(buffer);
 	for (uint16_t i = 0; i < header.e_phnum; i++) {
-		const Elf64_Phdr& phdr = *reinterpret_cast<const Elf64_Phdr*>(buffer + (header.e_phoff + i * header.e_phentsize));
+		const Elf64_Phdr& phdr = *reinterpret_cast<const Elf64_Phdr*>(buffer + (header.e_ehsize + i * header.e_phentsize));
 		if (phdr.p_type == PT_LOAD) {
 			uint8_t* src = buffer + phdr.p_offset;
 			uint8_t* dst = memory + phdr.p_paddr;
@@ -83,5 +84,5 @@ res_t loadElf(const char* filename, uint8_t* memory, uint64_t& startAddr)
 		}
 	}
 	startAddr = header.e_entry;
-	return res_t::OK;
+	return err_t::ok;
 }
