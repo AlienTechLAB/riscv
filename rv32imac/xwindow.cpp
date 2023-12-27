@@ -33,7 +33,6 @@ err_t xwindow::loop()
 	while (iRunning) {
 		const auto start = std::chrono::high_resolution_clock::now();
 		processEvents();
-		fill(iMouseX); // TODO - to be removed?
 		updateScreen();
 		const auto stop = std::chrono::high_resolution_clock::now();
   		const std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);

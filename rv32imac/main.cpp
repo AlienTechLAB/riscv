@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "general.h"
-#include "rv32imac.h"
 #include "xwindow.h"
+#include "hart.h"
 
 char GlobalPrintBuffer[256];
 
@@ -13,38 +13,13 @@ int main(int argc, char* argv[])
 		printf("Usage: riscv program.bin\n");
 		return 1;
 	}
-	rv32imac cpu;
-	cpu.pMemory = new uint8_t[16 * 1024 * 1024];
-	xwindow window(1024, 786, &cpu.pMemory[1024 * 1024]);
+	uint8_t* memory = new uint8_t[16 * 1024 * 1024];
+	hart hart(memory);
+	xwindow window(1024, 786, &memory[1024 * 1024]);
 	window.open();
-	//window.fill(0x00FF0000);
-	const char* filename = argv[1];
-	if (loadElf(filename, cpu.pMemory, cpu.pc) == err_t::error) {
-		fprintf(stderr, "Loading elf failed.\n");
-		return 1;
-	}
+	loadFile(argv[1], memory, 0);
+	hart.start(0);
 	window.loop();
 	window.close();
-
-	uint64_t iCounter = 0;
-	while (true) {
-		const uint32_t mcode = *((uint32_t*)&cpu.pMemory[cpu.pc]);
-		if (iCounter == 17) {
-			printf("error\n");
-		}
-		const err_t err = cpu.execute(mcode);
-		iCounter++;
-		if (err != err_t::ok) {
-			printf("ERROR at pc = %lu\n", cpu.pc);
-			return 1;
-		}
-		char* buffer = reinterpret_cast<char*>(cpu.pMemory + 0xFFC00);
-		if (buffer[0] != '\0') {
-			const char* text = buffer + 1;
-			strncpy(GlobalPrintBuffer, text + 1, sizeof(GlobalPrintBuffer));
-			printf("%s\n", text);
-			buffer[0] = '\0';
-		}
-	}
 	return 0;
 }

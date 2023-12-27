@@ -5,7 +5,7 @@
 #include <cassert>
 #include "general.h"
 
-err_t getFileSize(const char* filename, uint64_t& fileSize)
+err_t getFileSize(const char* filename, int64_t& fileSize)
 {
 	if (filename == nullptr)
 		return err_t::error;
@@ -14,17 +14,19 @@ err_t getFileSize(const char* filename, uint64_t& fileSize)
 		return err_t::error;
 	if (!S_ISREG(stats.st_mode))
 		return err_t::error;
-	fileSize = static_cast<uint64_t>(stats.st_size);
+	fileSize = static_cast<int64_t>(stats.st_size);
 	return err_t::ok;
 }
 
-err_t loadFile(const char* filename, uint8_t* buffer, uint64_t offset, uint64_t size)
+err_t loadFile(const char* filename, uint8_t* buffer, uint64_t offset, int64_t size)
 {
 	if (filename == nullptr || buffer == nullptr)
 		return err_t::error;
-	uint64_t fileSize = 0;
+	int64_t fileSize = 0;
 	if (getFileSize(filename, fileSize) == err_t::error)
 		return err_t::error;
+	if (size == -1)
+		size = fileSize;
 	if ((offset >= fileSize) || (size > fileSize - offset))
 		return err_t::error;
 	FILE* file = fopen(filename, "rb");
@@ -64,7 +66,7 @@ err_t saveFile(const char* filename, uint8_t* buffer, uint64_t size)
 // Simple ELF loader. TODO
 err_t loadElf(const char* filename, uint8_t* memory, uint64_t& startAddr)
 {
-	uint64_t fileSize = 0;
+	int64_t fileSize = 0;
 	if (getFileSize(filename, fileSize) == err_t::error)
 		return err_t::error;
 	uint8_t* buffer = new uint8_t[fileSize];
