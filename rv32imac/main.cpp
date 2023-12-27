@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "general.h"
 #include "rv32imac.h"
+#include "xwindow.h"
 
 char GlobalPrintBuffer[256];
 
@@ -13,12 +14,18 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	rv32imac cpu;
-	cpu.pMemory = new uint8_t[1024 * 1024];
+	cpu.pMemory = new uint8_t[16 * 1024 * 1024];
+	xwindow window(1024, 786, &cpu.pMemory[1024 * 1024]);
+	window.open();
+	//window.fill(0x00FF0000);
 	const char* filename = argv[1];
 	if (loadElf(filename, cpu.pMemory, cpu.pc) == err_t::error) {
 		fprintf(stderr, "Loading elf failed.\n");
 		return 1;
 	}
+	window.loop();
+	window.close();
+
 	uint64_t iCounter = 0;
 	while (true) {
 		const uint32_t mcode = *((uint32_t*)&cpu.pMemory[cpu.pc]);
