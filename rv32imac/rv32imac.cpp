@@ -4,7 +4,8 @@
 
 namespace riscv {
 
-rv32imac::rv32imac()
+rv32imac::rv32imac(memory& memory)
+	: iMemory(memory)
 {
 	reset();
 }
@@ -15,8 +16,17 @@ void rv32imac::reset()
 	pc = 0;
 }
 
+err_t rv32imac::next()
+{
+	uint32_t mcode;
+	if (iMemory.readUint32(mcode, pc, iEndian) == err_t::error)
+		return err_t::memory;
+	return execute(mcode);
+}
+
 err_t rv32imac::execute(const uint32_t mcode)
 {
+
 	switch (mcode & 0b11) {
 		case 0b00:
 			return quadrant0(mcode);
@@ -527,7 +537,7 @@ err_t rv32imac::executr_clui(const uint16_t mcode)
 
 err_t rv32imac::execute_csrai(const uint16_t mcode)
 {
-	const uint32_t shamt = getCI1uimm(mcode); // TODO getCI1uimm ?
+	const uint32_t shamt = getCI1uimm(mcode);  // TODO getCI1uimm ?
 	if (shamt == 0) {
 		// HINT
 		pc += 2;
@@ -560,7 +570,10 @@ err_t rv32imac::execute_clw(const uint16_t mcode)
 	const uint32_t offset = getCL3uimm(mcode);
 	const uint32_t rd = getC00Rdp(mcode);
 	const uint32_t rs1 = getC00Rs1p(mcode);
-	x[rd] = *((uint32_t*)&pMemory[x[rs1] + offset]);
+	uint32_t value;
+	if (iMemory.readUint32(value, x[rs1] + offset, iEndian) == err_t::error)
+		return err_t::memory;
+	x[rd] = value;
 	pc += 2;
 	return err_t::ok;
 }
@@ -569,7 +582,9 @@ err_t rv32imac::execute_clwsp(uint16_t mcode)
 {
 	const uint32_t rd = getC10Rd(mcode);
 	const uint32_t offset = getUImmQ2_010(mcode);
-	const uint32_t value = *((uint32_t*)&pMemory[x[2] + offset]);
+	uint32_t value;
+	if (iMemory.readUint32(value, x[2] + offset, iEndian) == err_t::error)
+		return err_t::memory;
 	x[rd] = value;
 	return err_t::ok;
 }
@@ -604,10 +619,10 @@ err_t rv32imac::execute_slli(uint16_t mcode)
 	const uint32_t shamt = getCI1uimm(mcode);
 	if (rd == 0 || shamt == 0) {
 		// HINT
-		pc +=2;
+		pc += 2;
 		return err_t::ok;
 	}
-	x[rd] <<= shamt;
+	x[rd] = x[rd] << shamt;
 	return err_t::ok;
 }
 
@@ -623,9 +638,10 @@ err_t rv32imac::execute_csub(const uint16_t mcode)
 err_t rv32imac::execute_csw(const uint16_t mcode)
 {
 	const uint32_t offset = getCL3uimm(mcode);
-	const uint32_t rs1 = getC00Rs1p(mcode);	
+	const uint32_t rs1 = getC00Rs1p(mcode);
 	const uint32_t rs2 = getC00Rs2p(mcode);
-	*((uint32_t*)&pMemory[x[rs1] + offset]) = x[rs2];
+	if (iMemory.writeUint32(x[rs2], x[rs1] + offset, iEndian) == err_t::error)
+		return err_t::memory;
 	pc += 2;
 	return err_t::ok;
 }
@@ -634,7 +650,9 @@ err_t rv32imac::execute_cswsp(uint16_t mcode)
 {
 	const uint32_t offset = getUImmQ2_110(mcode);
 	const uint32_t rs2 = getC10Rs2(mcode);
-	*((uint32_t*)&pMemory[x[2] + offset]) = x[rs2];
+	if (iMemory.writeUint32(x[rs2], x[2] + offset, iEndian) == err_t::error)
+		return err_t::memory;
+	pc += 2;
 	return err_t::ok;
 }
 
@@ -807,7 +825,9 @@ err_t rv32imac::execute_lb(const uint32_t mcode)
 	if (rd != 0) {
 		const int32_t offset = getIimm(mcode);
 		const uint8_t rs1 = getRs1(mcode);
-		const int8_t sbyte = pMemory[x[rs1] + offset];
+		int8_t sbyte;
+		if (iMemory.readInt8(sbyte, x[rs1] + offset) == err_t::error)
+			return err_t::memory;
 		const int32_t signExtended = static_cast<int32_t>(sbyte);
 		x[rd] = static_cast<uint32_t>(signExtended);
 	}
@@ -822,7 +842,9 @@ err_t rv32imac::execute_lbu(const uint32_t mcode)
 	if (rd != 0) {
 		const int32_t offset = getIimm(mcode);
 		const uint8_t rs1 = getRs1(mcode);
-		const uint8_t byte = pMemory[x[rs1] + offset];
+		uint8_t byte;
+		if (iMemory.readUint8(byte, x[rs1] + offset) == err_t::error)
+			return err_t::memory;
 		x[rd] = static_cast<uint32_t>(byte);
 	}
 	pc += 4;
@@ -836,7 +858,9 @@ err_t rv32imac::execute_lh(const uint32_t mcode)
 	if (rd != 0) {
 		const int32_t offset = getIimm(mcode);
 		const uint8_t rs1 = getRs1(mcode);
-		const int16_t shword = *((int16_t*)&pMemory[x[rs1] + offset]);
+		int16_t shword;
+		if (iMemory.readInt16(shword, x[rs1] + offset, iEndian) == err_t::error)
+			return err_t::memory;
 		const int32_t signExtended = static_cast<int32_t>(shword);
 		x[rd] = static_cast<uint32_t>(signExtended);
 	}
@@ -851,7 +875,9 @@ err_t rv32imac::execute_lhu(const uint32_t mcode)
 	if (rd != 0) {
 		const int32_t offset = getIimm(mcode);
 		const uint8_t rs1 = getRs1(mcode);
-		const uint16_t hword = *((uint16_t*)&pMemory[x[rs1] + offset]);
+		uint16_t hword;
+		if (iMemory.readUint16(hword, x[rs1] + offset, iEndian) == err_t::error)
+			return err_t::memory;
 		x[rd] = static_cast<uint32_t>(hword);
 	}
 	pc += 4;
@@ -875,7 +901,9 @@ err_t rv32imac::execute_lw(const uint32_t mcode)
 	if (rd != 0) {
 		const int32_t offset = getIimm(mcode);
 		const uint8_t rs1 = getRs1(mcode);
-		const int32_t sword = *((int32_t*)&pMemory[x[rs1] + offset]);
+		int32_t sword;
+		if (iMemory.readInt32(sword, x[rs1] + offset, iEndian) == err_t::error)
+			return err_t::memory;
 		x[rd] = static_cast<uint32_t>(sword);
 	}
 	pc += 4;
@@ -915,7 +943,8 @@ err_t rv32imac::execute_sb(const uint32_t mcode)
 	const uint8_t rs1 = getRs1(mcode);
 	const uint8_t rs2 = getRs2(mcode);
 	const uint8_t byte = static_cast<uint8_t>(x[rs2] & 0xFF);
-	pMemory[x[rs1] + offset] = byte;
+	if (iMemory.writeUint8(byte, x[rs1] + offset) == err_t::error)
+		return err_t::memory;
 	pc += 4;
 	return err_t::ok;
 }
@@ -927,7 +956,8 @@ err_t rv32imac::execute_sh(const uint32_t mcode)
 	const uint8_t rs1 = getRs1(mcode);
 	const uint8_t rs2 = getRs2(mcode);
 	const uint16_t hword = static_cast<uint16_t>(x[rs2] & 0xFFFF);
-	*((uint16_t*)&pMemory[x[rs1] + offset]) = hword;
+	if (iMemory.writeUint16(hword, x[rs1] + offset, iEndian) == err_t::error)
+		return err_t::memory;
 	pc += 4;
 	return err_t::ok;
 }
@@ -1082,7 +1112,8 @@ err_t rv32imac::execute_sw(const uint32_t mcode)
 	const uint8_t rs1 = getRs1(mcode);
 	const uint8_t rs2 = getRs2(mcode);
 	const uint32_t word = static_cast<uint32_t>(x[rs2] & 0xFFFFFFFF);
-	*((uint32_t*)&pMemory[x[rs1] + offset]) = word;
+	if (iMemory.writeUint32(word, x[rs1] + offset, iEndian) == err_t::error)
+		return err_t::memory;
 	pc += 4;
 	return err_t::ok;
 }

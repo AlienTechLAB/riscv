@@ -8,13 +8,14 @@
 #include <condition_variable>
 #include "types.h"
 #include "rv32imac.h"
+#include "memory.h"
 
 using namespace riscv;
 
 class hart
 {
 public:
-	hart(uint8_t* memory);
+	hart(memory& memory);
 	err_t start(uint64_t entryPoint);
 	err_t stop();
 	err_t pause();
@@ -25,6 +26,8 @@ private:
 	void loop();
 	err_t executeInstr();
 
+	memory& iMemory;
+	rv32imac iCpu;
 	uint64_t iCounter{ 0 };
 	std::thread iThread;
 	std::mutex iHartMutex;
@@ -36,7 +39,6 @@ private:
 	bool iRunning{ false };
 	bool iPausing{ false };
 	bool iResuming{ false };
-	rv32imac iCpu;
 	err_t iThreadErr{ err_t::ok };
 };
 

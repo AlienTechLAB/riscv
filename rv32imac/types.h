@@ -13,6 +13,7 @@ enum class err_t : uint8_t {
 	nse,
 	error,
 	unknown,
+	memory,
 	misaligned,
 	illegal,
 	isa_error,

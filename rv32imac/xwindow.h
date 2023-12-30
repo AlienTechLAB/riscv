@@ -5,13 +5,14 @@
 #include <X11/Xutil.h>
 #include <stdint.h>
 #include "types.h"
+#include "memory.h"
 
 using namespace riscv;
 
 class xwindow
 {
 public:
-	xwindow(uint32_t width, uint32_t height, uint8_t* video);
+	xwindow(uint32_t width, uint32_t height, memory& memory, const uint64_t videoAddr);
 	err_t open();
 	void close();
 	err_t loop();
@@ -26,9 +27,10 @@ private:
 	void onMouseButtonRelease(XEvent& event);
 	void onMouseMove(XEvent& event);
 
+	memory& iMemory;
+	uint64_t iVideoAddr{ 0 };
 	uint32_t iWidth{ 0 };
 	uint32_t iHeight{ 0 };
-	uint8_t* pVideo{ nullptr };
 	Display* iDisplay{ nullptr };
 	int iScreenID{ 0 };
 	Window iWindow;

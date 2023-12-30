@@ -3,22 +3,24 @@
 
 #include <stdint.h>
 #include "types.h"
+#include "memory.h"
 
 namespace riscv {
 
 class rv32imac
 {
 public:
-	rv32imac();
+	rv32imac(memory& memory);
 	void reset();
-
-	err_t execute(uint32_t mcode);
+	err_t next();
 
 	uint32_t x[32];
 	uint64_t pc{ 0 };
-	uint8_t* pMemory{ nullptr };
+	memory& iMemory;
 
 private:
+	err_t execute(uint32_t mcode);
+
 	err_t quadrant0(uint16_t mcode);
 	err_t quadrant1(uint16_t mcode);
 	err_t quadrant2(uint16_t mcode);
@@ -107,6 +109,8 @@ private:
 	err_t execute_sw(uint32_t mcode);
 	err_t execute_xor(uint32_t mcode);
 	err_t execute_xori(uint32_t mcode);
+
+	endian_t iEndian{ endian_t::little };
 };
 
 }  // namespace riscv

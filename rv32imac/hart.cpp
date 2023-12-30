@@ -1,8 +1,7 @@
 #include "hart.h"
 
-hart::hart(uint8_t* memory)
+hart::hart(memory& memory) : iMemory(memory), iCpu(memory)
 {
-	iCpu.pMemory = memory;
 }
 
 err_t hart::start(uint64_t entryPoint)
@@ -114,8 +113,7 @@ void hart::loop()
 
 err_t hart::executeInstr()
 {
-	const uint32_t mcode = *((uint32_t*)&iCpu.pMemory[iCpu.pc]);
-	const err_t cpuErr = iCpu.execute(mcode);
+	const err_t cpuErr = iCpu.next();
 	iCounter++;
 	return cpuErr;
 }

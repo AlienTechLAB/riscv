@@ -2,8 +2,8 @@
 #include <unistd.h>
 #include "xwindow.h"
 
-xwindow::xwindow(uint32_t width, uint32_t height, uint8_t* video)
-	: iWidth(width), iHeight(height), pVideo(video)
+xwindow::xwindow(uint32_t width, uint32_t height, memory& memory, const uint64_t videoAddr)
+	: iWidth(width), iHeight(height), iMemory(memory), iVideoAddr(videoAddr)
 {
 }
 
@@ -51,9 +51,12 @@ void xwindow::close()
 // TODO - to be removed?
 void xwindow::fill(uint32_t color)
 {
+	std::lock_guard<memory> lock(iMemory);
 	for (int y = 0; y < iHeight; y++) {
-		for (int x = 0; x < iWidth; x++)
-			*((uint32_t*)&pVideo[(y * iWidth + x) * 4]) = color;
+		for (int x = 0; x < iWidth; x++) {
+			uint32_t* pVideo = (uint32_t*)(iMemory.data() + iVideoAddr + ((y * iWidth + x) * 4));
+			*pVideo = color;
+		}
 	}
 }
 
@@ -88,7 +91,9 @@ void xwindow::processEvents()
 
 void xwindow::updateScreen()
 {
-	XImage* image = XCreateImage(iDisplay, DefaultVisual(iDisplay, iScreenID), 24, ZPixmap, 0, (char*)pVideo, iWidth, iHeight, 32, 0);
+	std::lock_guard<memory> lock(iMemory);
+	char* videoAddr = (char*)(iMemory.data() + iVideoAddr);
+	XImage* image = XCreateImage(iDisplay, DefaultVisual(iDisplay, iScreenID), 24, ZPixmap, 0, videoAddr, iWidth, iHeight, 32, 0);
 	XPutImage(iDisplay, iWindow, iGContext, image, 0, 0, 0, 0, iWidth, iHeight);
 	XFlush(iDisplay);
 }

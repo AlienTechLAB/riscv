@@ -4,8 +4,9 @@
 #include "general.h"
 #include "xwindow.h"
 #include "hart.h"
+#include "memory.h"
 
-char GlobalPrintBuffer[256];
+using namespace riscv;
 
 int main(int argc, char* argv[])
 {
@@ -13,11 +14,12 @@ int main(int argc, char* argv[])
 		printf("Usage: riscv program.bin\n");
 		return 1;
 	}
-	uint8_t* memory = new uint8_t[16 * 1024 * 1024];
+	memory memory;
+	memory.init(16 * 1024 * 1024);
+	loadFile(argv[1], memory.data(), 0);
 	hart hart(memory);
-	xwindow window(1024, 786, &memory[1024 * 1024]);
+	xwindow window(1024, 786, memory, 1024 * 1024);
 	window.open();
-	loadFile(argv[1], memory, 0);
 	hart.start(0);
 	window.loop();
 	window.close();
